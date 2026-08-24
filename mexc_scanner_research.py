@@ -274,6 +274,8 @@ def analyse_timeframe(k):
 
     recent_high = max(highs[-20:])
     recent_low = min(lows[-20:])
+    "last_high": highs[-1],
+    "last_low": lows[-1],
 
     return {
         "close": current,
@@ -532,7 +534,8 @@ for index, c in enumerate(candidates, 1):
             "atr5_pct": atr5_pct,
             "recent_high5": a5["recent_high"],
             "recent_low5": a5["recent_low"],
-
+            "last_high5": a5["last_high"],
+            "last_low5": a5["last_low"],
             "rsi15": a15["rsi"],
             "ema9_15": a15["ema9"],
             "ema21_15": a15["ema21"],
