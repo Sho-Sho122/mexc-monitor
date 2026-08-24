@@ -274,8 +274,6 @@ def analyse_timeframe(k):
 
     recent_high = max(highs[-20:])
     recent_low = min(lows[-20:])
-    "last_high": highs[-1],
-    "last_low": lows[-1],
 
     return {
         "close": current,
@@ -289,6 +287,8 @@ def analyse_timeframe(k):
         "volume_ratio": volume_ratio,
         "recent_high": recent_high,
         "recent_low": recent_low,
+        "last_high": highs[-1],
+        "last_low": lows[-1],
         "long": long_score,
         "short": short_score
     }
