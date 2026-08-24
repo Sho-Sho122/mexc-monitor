@@ -1,4 +1,4 @@
-name: MEXC Monitor
+name: MEXC Research
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: mexc-monitor
+  group: mexc-research
   cancel-in-progress: false
 
 jobs:
@@ -31,20 +31,19 @@ jobs:
       - name: Run MEXC scanner
         env:
           TZ: Asia/Tokyo
-        run: python mexc_scanner.py
+        run: python mexc_scanner_research.py
 
       - name: Run signal system
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TZ: Asia/Tokyo
-        run: python mexc_system.py
-
-      - name: Save system state
+        run: python strategy_high_edge.py
+       - name: Save research state
         run: |
-          git config user.name "mexc-monitor-bot"
-          git config user.email "mexc-monitor-bot@users.noreply.github.com"
+          git config user.name "mexc-research-bot"
+          git config user.email "mexc-research-bot@users.noreply.github.com"
 
-          for file in mexc_system_state.json mexc_paper_trades.csv mexc_oi_state.json
+          for file in strategy_high_edge_state.json strategy_high_edge.csv mexc_oi_state_research.json
           do
             if [ -f "$file" ]; then
               git add "$file"
@@ -52,12 +51,10 @@ jobs:
           done
 
           if git diff --cached --quiet; then
-            echo "No state changes"
+            echo "No research state changes"
             exit 0
           fi
 
-          git commit -m "Update MEXC monitor state"
-
+          git commit -m "Update MEXC research state"
           git pull --rebase origin main
-
           git push origin main
