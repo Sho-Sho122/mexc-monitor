@@ -13,7 +13,7 @@ TOP_COUNT = 10
 MIN_AMOUNT24 = 1_000_000
 MAX_SPREAD_PCT = 0.20
 API_SLEEP = 0.12
-OI_STATE_FILE = "mexc_oi_state.json"
+OI_STATE_FILE = "mexc_oi_state_research.json"
 
 
 def get_json(url, params=None):
