@@ -38,12 +38,27 @@ jobs:
           TZ: Asia/Tokyo
         run: python strategy_high_edge.py
 
+      - name: Run TREND VOLUME strategy
+        env:
+          TZ: Asia/Tokyo
+        run: python strategy_trend_volume.py
+
+      - name: Run PULLBACK strategy
+        env:
+          TZ: Asia/Tokyo
+        run: python strategy_pullback.py
+
+      - name: Run OI FUNDING strategy
+        env:
+          TZ: Asia/Tokyo
+        run: python strategy_oi_funding.py
+
       - name: Save research state
         run: |
           git config user.name "mexc-research-bot"
           git config user.email "mexc-research-bot@users.noreply.github.com"
 
-          for file in strategy_high_edge_state.json strategy_high_edge.csv mexc_oi_state_research.json
+          for file in             strategy_high_edge_state.json             strategy_high_edge.csv             strategy_trend_volume_state.json             strategy_trend_volume.csv             strategy_pullback_state.json             strategy_pullback.csv             strategy_oi_funding_state.json             strategy_oi_funding.csv             mexc_oi_state_research.json
           do
             if [ -f "$file" ]; then
               git add "$file"
