@@ -14,7 +14,7 @@ jobs:
   scan:
     runs-on: ubuntu-latest
 
-    steps:
+    step:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
