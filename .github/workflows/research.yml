@@ -1,0 +1,63 @@
+name: MEXC Monitor
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mexc-monitor
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packages
+        run: pip install -r requirements.txt
+
+      - name: Run MEXC scanner
+        env:
+          TZ: Asia/Tokyo
+        run: python mexc_scanner.py
+
+      - name: Run signal system
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TZ: Asia/Tokyo
+        run: python mexc_system.py
+
+      - name: Save system state
+        run: |
+          git config user.name "mexc-monitor-bot"
+          git config user.email "mexc-monitor-bot@users.noreply.github.com"
+
+          for file in mexc_system_state.json mexc_paper_trades.csv mexc_oi_state.json
+          do
+            if [ -f "$file" ]; then
+              git add "$file"
+            fi
+          done
+
+          if git diff --cached --quiet; then
+            echo "No state changes"
+            exit 0
+          fi
+
+          git commit -m "Update MEXC monitor state"
+
+          git pull --rebase origin main
+
+          git push origin main
