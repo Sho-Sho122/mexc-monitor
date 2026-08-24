@@ -28,17 +28,17 @@ jobs:
       - name: Install packages
         run: pip install -r requirements.txt
 
-      - name: Run MEXC scanner
+      - name: Run research scanner
         env:
           TZ: Asia/Tokyo
         run: python mexc_scanner_research.py
 
-      - name: Run signal system
+      - name: Run HIGH EDGE strategy
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TZ: Asia/Tokyo
         run: python strategy_high_edge.py
-       - name: Save research state
+
+      - name: Save research state
         run: |
           git config user.name "mexc-research-bot"
           git config user.email "mexc-research-bot@users.noreply.github.com"
