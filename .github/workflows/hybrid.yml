@@ -56,6 +56,8 @@ jobs:
 
           git commit -m "Update MEXC HYBRID state"
 
+          git stash --include-untracked
           git pull --rebase origin main
+          git stash pop || true
 
           git push origin main
