@@ -18,7 +18,7 @@ JST = timezone(timedelta(hours=9))
 STATE_FILE = "mexc_hybrid_state.json"
 TRADE_LOG_FILE = "mexc_hybrid_trades.csv"
 
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_HYBRID_WEBHOOK_URL", "").strip()
 
 START_BALANCE = 38.0
 RISK_PCT = 0.0145          # 初期38USDTなら約0.55USDT = 1R
