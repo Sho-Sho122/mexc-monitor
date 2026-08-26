@@ -38,26 +38,96 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TZ: Asia/Tokyo
         run: python mexc_system.py
+name: MEXC Monitor
 
-      - name: Save system state
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mexc-monitor
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packages
+        run: pip install -r requirements.txt
+
+      - name: Run MEXC scanner
+        env:
+          TZ: Asia/Tokyo
+        run: python mexc_scanner.py
+
+      - name: Run signal system
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TZ: Asia/Tokyo
+        run: python mexc_system.py
+
+      - name: Save system state robustly
+        shell: bash
         run: |
+          set -e
+
           git config user.name "mexc-monitor-bot"
           git config user.email "mexc-monitor-bot@users.noreply.github.com"
 
-          for file in mexc_system_state.json mexc_paper_trades.csv mexc_oi_state.json
+          mkdir -p /tmp/mexc-monitor-save
+
+          for file in \
+            mexc_system_state.json \
+            mexc_paper_trades.csv \
+            mexc_oi_state.json
           do
             if [ -f "$file" ]; then
-              git add "$file"
+              cp "$file" "/tmp/mexc-monitor-save/$file"
             fi
           done
 
-          if git diff --cached --quiet; then
-            echo "No state changes"
-            exit 0
-          fi
+          for attempt in 1 2 3 4 5 6 7 8 9 10
+          do
+            echo "Save attempt $attempt"
 
-          git commit -m "Update MEXC monitor state"
+            git fetch origin main
+            git reset --hard origin/main
 
-          git pull --rebase origin main
+            for file in /tmp/mexc-monitor-save/*
+            do
+              [ -e "$file" ] || continue
+              cp "$file" .
+              git add "$(basename "$file")"
+            done
 
-          git push origin main
+            if git diff --cached --quiet; then
+              echo "No state changes"
+              exit 0
+            fi
+
+            git commit -m "Update MEXC monitor state"
+
+            if git push origin HEAD:main; then
+              echo "MEXC monitor state saved"
+              exit 0
+            fi
+
+            echo "Push raced with another workflow. Retrying..."
+            sleep 3
+          done
+
+          echo "Could not save MEXC monitor state after 10 attempts"
+          exit 1
