@@ -35,7 +35,7 @@ jobs:
         env:
           DISCORD_LAB_WEBHOOK_URL: ${{ secrets.DISCORD_LAB_WEBHOOK_URL }}
           TZ: Asia/Tokyo
-        run: python hybrid_lab.py
+        run: python hybrid_lab_engine.py
 
       - name: Save LAB state robustly
         shell: bash
