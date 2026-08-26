@@ -1,0 +1,48 @@
+{
+  "active": false,
+  "discord_enabled": false,
+  "planned_model_counts": {
+    "STAGE1_ONLY": 40,
+    "STAGE2_ONLY": 40,
+    "STAGE3_ONLY": 40,
+    "STAGE1_STAGE2": 80,
+    "STAGE1_STAGE3": 80,
+    "STAGE2_STAGE3": 80,
+    "STAGE1_STAGE2_STAGE3": 150,
+    "BASE": 1,
+    "TOTAL": 511
+  },
+  "best_selector": {
+    "min_closed_for_perf_weight": 50,
+    "min_family_support": 4,
+    "min_total_support_pct": 55.0
+  },
+  "notes": [
+    "今は準備状態。active=falseなので取引しない。",
+    "基礎4戦略が十分集まった後、このmodels配列を511モデルで置き換える。",
+    "Stage1=加点/減点/0の符号選別。",
+    "Stage2=主役候補の重み付け。",
+    "Stage3=シグナル組合せの追加加点/減点。",
+    "511モデル確定後は新規データだけでフォワードテストする。"
+  ],
+  "models": [
+    {
+      "id": "BASE_001",
+      "family": "BASE",
+      "weights": {
+        "PB_LONG": 1.0,
+        "PB_SHORT": 1.0,
+        "TV_LONG": 1.0,
+        "TV_SHORT": 1.0,
+        "HE_LONG": 1.0,
+        "HE_SHORT": 1.0,
+        "OI_LONG": 1.0,
+        "OI_SHORT": 1.0
+      },
+      "primary_multipliers": {},
+      "interactions": [],
+      "trade_score": 2.0,
+      "min_margin": 1.0
+    }
+  ]
+}
