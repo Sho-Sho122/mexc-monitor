@@ -1,13 +1,5 @@
 {
   "positions": {
-    "SPX500_USDT": {
-      "direction": "LONG",
-      "edge": 35.0,
-      "entry": 7668.0,
-      "sl": 7641.162,
-      "tp": 7721.6759999999995,
-      "opened_at": "2026-08-25T03:31:11.539998"
-    },
     "TRUMPOFFICIAL_USDT": {
       "direction": "SHORT",
       "edge": 35.0,
@@ -39,7 +31,23 @@
       "sl": 68.5592,
       "tp": 69.28159999999998,
       "opened_at": "2026-08-27T07:21:04.877189"
+    },
+    "TAO_USDT": {
+      "direction": "LONG",
+      "edge": 36.0,
+      "entry": 232.3,
+      "sl": 231.19771428571428,
+      "tp": 234.50457142857144,
+      "opened_at": "2026-08-27T07:31:10.479310"
+    },
+    "PUMPFUN_USDT": {
+      "direction": "LONG",
+      "edge": 35.5,
+      "entry": 0.004865,
+      "sl": 0.004814685714285715,
+      "tp": 0.004965628571428573,
+      "opened_at": "2026-08-27T07:31:10.479402"
     }
   },
-  "last_scan": "mexc_scan_20260827_072104.csv"
+  "last_scan": "mexc_scan_20260827_073110.csv"
 }
