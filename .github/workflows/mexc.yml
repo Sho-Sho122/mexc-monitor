@@ -38,46 +38,6 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TZ: Asia/Tokyo
         run: python mexc_system.py
-name: MEXC Monitor
-
-on:
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: mexc-monitor
-  cancel-in-progress: false
-
-jobs:
-  scan:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install packages
-        run: pip install -r requirements.txt
-
-      - name: Run MEXC scanner
-        env:
-          TZ: Asia/Tokyo
-        run: python mexc_scanner.py
-
-      - name: Run signal system
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          TZ: Asia/Tokyo
-        run: python mexc_system.py
 
       - name: Save system state robustly
         shell: bash
