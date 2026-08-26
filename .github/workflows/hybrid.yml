@@ -37,27 +37,54 @@ jobs:
           TZ: Asia/Tokyo
         run: python mexc_hybrid_system.py
 
-      - name: Save HYBRID state
+      - name: Save HYBRID state robustly
+        shell: bash
         run: |
+          set -e
+
           git config user.name "mexc-hybrid-bot"
           git config user.email "mexc-hybrid-bot@users.noreply.github.com"
 
-          for file in mexc_hybrid_state.json mexc_hybrid_trades.csv
+          mkdir -p /tmp/mexc-hybrid-save
+
+          for file in \
+            mexc_hybrid_state.json \
+            mexc_hybrid_trades.csv
           do
             if [ -f "$file" ]; then
-              git add "$file"
+              cp "$file" "/tmp/mexc-hybrid-save/$file"
             fi
           done
 
-          if git diff --cached --quiet; then
-            echo "No HYBRID state changes"
-            exit 0
-          fi
+          for attempt in 1 2 3 4 5 6 7 8 9 10
+          do
+            echo "Save attempt $attempt"
 
-          git commit -m "Update MEXC HYBRID state"
+            git fetch origin main
+            git reset --hard origin/main
 
-          git stash --include-untracked
-          git pull --rebase origin main
-          git stash pop || true
+            for file in /tmp/mexc-hybrid-save/*
+            do
+              [ -e "$file" ] || continue
+              cp "$file" .
+              git add "$(basename "$file")"
+            done
 
-          git push origin main
+            if git diff --cached --quiet; then
+              echo "No HYBRID state changes"
+              exit 0
+            fi
+
+            git commit -m "Update MEXC HYBRID state"
+
+            if git push origin HEAD:main; then
+              echo "HYBRID state saved"
+              exit 0
+            fi
+
+            echo "Push raced with another workflow. Retrying..."
+            sleep 3
+          done
+
+          echo "Could not save HYBRID state after 10 attempts"
+          exit 1
