@@ -20,6 +20,26 @@ RR = 2.0
 STATE_FILE = "strategy_high_edge_state.json"
 LOG_FILE = "strategy_high_edge.csv"
 
+FIELDS = [
+    # 既存列
+    "time","symbol","event","direction","edge","entry","sl","tp",
+    "exit","result_r","rsi1","rsi5","rsi15","spread_pct",
+    "amount24","volume_ratio1","volume_ratio5","note",
+
+    # 共通特徴量
+    "scan_time_jst","ticker_time_jst",
+    "price","bid","ask","volume24","change24",
+    "funding_rate","oi","oi_change_pct",
+    "ema9_1","ema21_1","ema9_5","ema21_5","ema9_15","ema21_15",
+    "macd1","macd_signal1","macd_hist1",
+    "macd5","macd_signal5","macd_hist5",
+    "macd15","macd_signal15","macd_hist15",
+    "volume_ratio15",
+    "atr1_pct","atr5_pct","atr15_pct",
+    "long_score","short_score","bias"
+]
+
+
 def num(x, default=0.0):
     try:
         if x in ("", None, "None", "nan", "NaN"):
@@ -49,12 +69,71 @@ def save_state(state):
         json.dump(state, f, ensure_ascii=False, indent=2)
     os.replace(tmp, STATE_FILE)
 
+def ensure_csv_schema():
+    """既存CSVを保持したまま、新しいヘッダーへ一度だけ移行する。"""
+    if not os.path.exists(LOG_FILE):
+        return
+
+    with open(LOG_FILE, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        old_fields = reader.fieldnames or []
+        if old_fields == FIELDS:
+            return
+        old_rows = list(reader)
+
+    tmp = LOG_FILE + ".schema_tmp"
+    with open(tmp, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDS)
+        writer.writeheader()
+        for row in old_rows:
+            writer.writerow({k: row.get(k, "") for k in FIELDS})
+
+    os.replace(tmp, LOG_FILE)
+    print("HIGH_EDGE CSV schema updated:", len(old_fields), "->", len(FIELDS), "columns")
+
+
+def common_snapshot(r):
+    return {
+        "scan_time_jst": r.get("scan_time_jst", ""),
+        "ticker_time_jst": r.get("ticker_time_jst", ""),
+        "price": num(r.get("price")),
+        "bid": num(r.get("bid")),
+        "ask": num(r.get("ask")),
+        "volume24": num(r.get("volume24")),
+        "change24": num(r.get("change24")),
+        "funding_rate": num(r.get("funding_rate")),
+        "oi": num(r.get("oi")),
+        "oi_change_pct": (
+            "" if r.get("oi_change_pct") in ("", None, "None", "nan", "NaN")
+            else num(r.get("oi_change_pct"))
+        ),
+        "ema9_1": num(r.get("ema9_1")),
+        "ema21_1": num(r.get("ema21_1")),
+        "ema9_5": num(r.get("ema9_5")),
+        "ema21_5": num(r.get("ema21_5")),
+        "ema9_15": num(r.get("ema9_15")),
+        "ema21_15": num(r.get("ema21_15")),
+        "macd1": num(r.get("macd1")),
+        "macd_signal1": num(r.get("macd_signal1")),
+        "macd_hist1": num(r.get("macd_hist1")),
+        "macd5": num(r.get("macd5")),
+        "macd_signal5": num(r.get("macd_signal5")),
+        "macd_hist5": num(r.get("macd_hist5")),
+        "macd15": num(r.get("macd15")),
+        "macd_signal15": num(r.get("macd_signal15")),
+        "macd_hist15": num(r.get("macd_hist15")),
+        "volume_ratio15": num(r.get("volume_ratio15")),
+        "atr1_pct": num(r.get("atr1_pct")),
+        "atr5_pct": num(r.get("atr5_pct")),
+        "atr15_pct": num(r.get("atr15_pct")),
+        "long_score": num(r.get("long_score")),
+        "short_score": num(r.get("short_score")),
+        "bias": r.get("bias", ""),
+    }
+
+
 def append_log(row):
-    fields = [
-        "time","symbol","event","direction","edge","entry","sl","tp",
-        "exit","result_r","rsi1","rsi5","rsi15","spread_pct",
-        "amount24","volume_ratio1","volume_ratio5","note"
-    ]
+    fields = FIELDS
     exists = os.path.exists(LOG_FILE)
     with open(LOG_FILE, "a", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields)
@@ -202,7 +281,7 @@ def open_new_signals(state, rows):
             "opened_at": datetime.now().isoformat()
         }
 
-        append_log({
+        row = {
             "time": datetime.now().isoformat(),
             "symbol": symbol,
             "event": "OPEN",
@@ -219,9 +298,12 @@ def open_new_signals(state, rows):
             "volume_ratio1": num(r.get("volume_ratio1")),
             "volume_ratio5": num(r.get("volume_ratio5")),
             "note": "HIGH_EDGE"
-        })
+        }
+        row.update(common_snapshot(r))
+        append_log(row)
 
 def main():
+    ensure_csv_schema()
     scan = latest_scan()
     scan_name = os.path.basename(scan)
     state = load_state()
