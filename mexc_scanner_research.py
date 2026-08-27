@@ -149,7 +149,8 @@ def get_klines(symbol, interval, bars=120):
     seconds = {
         "Min1": 60,
         "Min5": 300,
-        "Min15": 900
+        "Min15": 900,
+        "Min60": 3600
     }
 
     end = int(time.time())
@@ -294,6 +295,91 @@ def analyse_timeframe(k):
     }
 
 
+
+def pct_return(closes, lookback=1):
+    if len(closes) <= lookback:
+        return 0.0
+    old = closes[-1 - lookback]
+    new = closes[-1]
+    if old == 0:
+        return 0.0
+    return ((new - old) / old) * 100
+
+
+def get_btc_market_snapshot():
+    """
+    BTC_USDTの市場状態を1スキャンにつき1回だけ取得する。
+    完成済みレジーム名はまだ決めず、生の特徴量を保存する。
+    """
+    symbol = "BTC_USDT"
+
+    k1 = get_klines(symbol, "Min1", 120)
+    time.sleep(API_SLEEP)
+
+    k5 = get_klines(symbol, "Min5", 120)
+    time.sleep(API_SLEEP)
+
+    k15 = get_klines(symbol, "Min15", 120)
+    time.sleep(API_SLEEP)
+
+    k60 = get_klines(symbol, "Min60", 120)
+    time.sleep(API_SLEEP)
+
+    a1 = analyse_timeframe(k1)
+    a5 = analyse_timeframe(k5)
+    a15 = analyse_timeframe(k15)
+    a60 = analyse_timeframe(k60)
+
+    if a1 is None or a5 is None or a15 is None or a60 is None:
+        raise RuntimeError("BTC市場スナップショットのKline不足")
+
+    btc_price = a1["close"]
+
+    def atr_pct(a):
+        return (a["atr"] / btc_price * 100) if a["atr"] else 0.0
+
+    return {
+        "btc_price": btc_price,
+
+        "btc_ret_1m_pct": pct_return(k1["close"], 1),
+        "btc_ret_5m_pct": pct_return(k5["close"], 1),
+        "btc_ret_15m_pct": pct_return(k15["close"], 1),
+        "btc_ret_1h_pct": pct_return(k60["close"], 1),
+
+        "btc_rsi1": a1["rsi"],
+        "btc_rsi5": a5["rsi"],
+        "btc_rsi15": a15["rsi"],
+        "btc_rsi60": a60["rsi"],
+
+        "btc_ema9_1": a1["ema9"],
+        "btc_ema21_1": a1["ema21"],
+        "btc_ema9_5": a5["ema9"],
+        "btc_ema21_5": a5["ema21"],
+        "btc_ema9_15": a15["ema9"],
+        "btc_ema21_15": a15["ema21"],
+        "btc_ema9_60": a60["ema9"],
+        "btc_ema21_60": a60["ema21"],
+
+        "btc_macd1": a1["macd"],
+        "btc_macd_signal1": a1["macd_signal"],
+        "btc_macd5": a5["macd"],
+        "btc_macd_signal5": a5["macd_signal"],
+        "btc_macd15": a15["macd"],
+        "btc_macd_signal15": a15["macd_signal"],
+        "btc_macd60": a60["macd"],
+        "btc_macd_signal60": a60["macd_signal"],
+
+        "btc_volume_ratio1": a1["volume_ratio"],
+        "btc_volume_ratio5": a5["volume_ratio"],
+        "btc_volume_ratio15": a15["volume_ratio"],
+        "btc_volume_ratio60": a60["volume_ratio"],
+
+        "btc_atr1_pct": atr_pct(a1),
+        "btc_atr5_pct": atr_pct(a5),
+        "btc_atr15_pct": atr_pct(a15),
+        "btc_atr60_pct": atr_pct(a60),
+    }
+
 def load_previous_oi():
     if not os.path.exists(OI_STATE_FILE):
         return {}
@@ -424,6 +510,23 @@ print()
 
 results = []
 
+print("BTC市場スナップショット取得中...")
+btc_market = get_btc_market_snapshot()
+print(
+    "BTC:",
+    round(btc_market["btc_price"], 2),
+    "| 1m:",
+    round(btc_market["btc_ret_1m_pct"], 4),
+    "% | 5m:",
+    round(btc_market["btc_ret_5m_pct"], 4),
+    "% | 15m:",
+    round(btc_market["btc_ret_15m_pct"], 4),
+    "% | 1h:",
+    round(btc_market["btc_ret_1h_pct"], 4),
+    "%"
+)
+print()
+
 for index, c in enumerate(candidates, 1):
     symbol = c["symbol"]
 
@@ -548,7 +651,10 @@ for index, c in enumerate(candidates, 1):
             "long_score": long_score,
             "short_score": short_score,
             "bias": bias,
-            "edge": edge
+            "edge": edge,
+
+            # BTC市場状態の生特徴量
+            **btc_market
         }
 
         results.append(result)
