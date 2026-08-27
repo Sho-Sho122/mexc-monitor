@@ -45,6 +45,67 @@ def append_log(path, fields, row):
             w.writeheader()
         w.writerow({k: row.get(k, "") for k in fields})
 
+def ensure_csv_schema(path, fields):
+    """既存CSVを保持したまま、新しいヘッダーへ一度だけ移行する。"""
+    if not os.path.exists(path):
+        return
+
+    with open(path, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        old_fields = reader.fieldnames or []
+        if old_fields == fields:
+            return
+        old_rows = list(reader)
+
+    tmp = path + ".schema_tmp"
+    with open(tmp, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        for row in old_rows:
+            writer.writerow({k: row.get(k, "") for k in fields})
+
+    os.replace(tmp, path)
+    print("OI_FUNDING CSV schema updated:", len(old_fields), "->", len(fields), "columns")
+
+
+def common_snapshot(r):
+    return {
+        "scan_time_jst": r.get("scan_time_jst", ""),
+        "ticker_time_jst": r.get("ticker_time_jst", ""),
+        "price": num(r.get("price")),
+        "bid": num(r.get("bid")),
+        "ask": num(r.get("ask")),
+        "volume24": num(r.get("volume24")),
+        "change24": num(r.get("change24")),
+        "oi": num(r.get("oi")),
+        "rsi1": num(r.get("rsi1")),
+        "rsi15": num(r.get("rsi15")),
+        "ema9_1": num(r.get("ema9_1")),
+        "ema21_1": num(r.get("ema21_1")),
+        "ema9_5": num(r.get("ema9_5")),
+        "ema21_5": num(r.get("ema21_5")),
+        "ema9_15": num(r.get("ema9_15")),
+        "ema21_15": num(r.get("ema21_15")),
+        "macd1": num(r.get("macd1")),
+        "macd_signal1": num(r.get("macd_signal1")),
+        "macd_hist1": num(r.get("macd_hist1")),
+        "macd5": num(r.get("macd5")),
+        "macd_signal5": num(r.get("macd_signal5")),
+        "macd_hist5": num(r.get("macd_hist5")),
+        "macd15": num(r.get("macd15")),
+        "macd_signal15": num(r.get("macd_signal15")),
+        "macd_hist15": num(r.get("macd_hist15")),
+        "volume_ratio1": num(r.get("volume_ratio1")),
+        "volume_ratio15": num(r.get("volume_ratio15")),
+        "atr1_pct": num(r.get("atr1_pct")),
+        "atr5_pct": num(r.get("atr5_pct")),
+        "atr15_pct": num(r.get("atr15_pct")),
+        "long_score": num(r.get("long_score")),
+        "short_score": num(r.get("short_score")),
+        "bias": r.get("bias", ""),
+    }
+
+
 def make_plan(r, direction):
     price = num(r.get("price"))
     atr5_pct = max(num(r.get("atr5_pct")), 0.10) / 100.0
@@ -122,9 +183,22 @@ STATE_FILE = "strategy_oi_funding_state.json"
 LOG_FILE = "strategy_oi_funding.csv"
 
 FIELDS = [
+    # 既存列
     "time","symbol","event","direction","entry","sl","tp","exit","result_r",
     "oi_change_pct","funding_rate","edge","volume_ratio5","rsi5",
-    "spread_pct","amount24","note"
+    "spread_pct","amount24","note",
+
+    # 共通特徴量
+    "scan_time_jst","ticker_time_jst",
+    "price","bid","ask","volume24","change24","oi",
+    "rsi1","rsi15",
+    "ema9_1","ema21_1","ema9_5","ema21_5","ema9_15","ema21_15",
+    "macd1","macd_signal1","macd_hist1",
+    "macd5","macd_signal5","macd_hist5",
+    "macd15","macd_signal15","macd_hist15",
+    "volume_ratio1","volume_ratio15",
+    "atr1_pct","atr5_pct","atr15_pct",
+    "long_score","short_score","bias"
 ]
 
 MIN_OI_CHANGE_PCT = 0.30
@@ -176,6 +250,7 @@ def qualifies(r):
     return False, "NEUTRAL", edge
 
 def main():
+    ensure_csv_schema(LOG_FILE, FIELDS)
     scan = latest_scan()
     scan_name = os.path.basename(scan)
     state = load_state(STATE_FILE)
@@ -207,7 +282,7 @@ def main():
             "opened_at": datetime.now().isoformat()
         }
 
-        append_log(LOG_FILE, FIELDS, {
+        row = {
             "time": datetime.now().isoformat(),
             "symbol": symbol,
             "event": "OPEN",
@@ -223,7 +298,9 @@ def main():
             "spread_pct": num(r.get("spread_pct")),
             "amount24": num(r.get("amount24")),
             "note": "OI_FUNDING"
-        })
+        }
+        row.update(common_snapshot(r))
+        append_log(LOG_FILE, FIELDS, row)
 
     state["last_scan"] = scan_name
     save_state(STATE_FILE, state)
