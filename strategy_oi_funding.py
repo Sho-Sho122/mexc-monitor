@@ -8,6 +8,36 @@ RR = 2.0
 MAX_SPREAD_PCT = 0.05
 MIN_AMOUNT24 = 5_000_000
 
+STATE_FILE = "strategy_pullback_state.json"
+LOG_FILE = "strategy_pullback.csv"
+
+FIELDS = [
+    "time","symbol","event","direction","entry","sl","tp","exit","result_r",
+    "distance_ema9_5_pct","rsi1","rsi5","rsi15","macd1","macd_signal1",
+    "spread_pct","amount24","note",
+
+    "scan_time_jst","ticker_time_jst",
+    "price","bid","ask","volume24","change24",
+    "funding_rate","oi","oi_change_pct",
+
+    "ema9_1","ema21_1",
+    "ema9_5","ema21_5",
+    "ema9_15","ema21_15",
+
+    "macd_hist1",
+    "macd5","macd_signal5","macd_hist5",
+    "macd15","macd_signal15","macd_hist15",
+
+    "volume_ratio1","volume_ratio5","volume_ratio15",
+
+    "atr1_pct","atr5_pct","atr15_pct",
+
+    "long_score","short_score","bias","edge"
+]
+
+MAX_EMA9_DISTANCE_PCT = 0.35
+
+
 def num(x, default=0.0):
     try:
         if x in ("", None, "None", "nan", "NaN"):
@@ -16,11 +46,13 @@ def num(x, default=0.0):
     except Exception:
         return default
 
+
 def latest_scan():
     files = glob.glob("mexc_scan_*.csv")
     if not files:
         raise FileNotFoundError("mexc_scan_*.csv が見つかりません")
     return max(files, key=os.path.getmtime)
+
 
 def load_state(path):
     if not os.path.exists(path):
@@ -31,11 +63,43 @@ def load_state(path):
     except Exception:
         return {"positions": {}, "last_scan": None}
 
+
 def save_state(path, state):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
     os.replace(tmp, path)
+
+
+def ensure_csv_schema(path, fields):
+    """既存CSVを壊さず、新しい共通列を追加したヘッダーへ一度だけ移行する。"""
+    if not os.path.exists(path):
+        return
+
+    try:
+        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            old_fields = reader.fieldnames or []
+
+            if old_fields == fields:
+                return
+
+            old_rows = list(reader)
+
+        tmp = path + ".schema_tmp"
+
+        with open(tmp, "w", encoding="utf-8-sig", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fields)
+            writer.writeheader()
+            for row in old_rows:
+                writer.writerow({key: row.get(key, "") for key in fields})
+
+        os.replace(tmp, path)
+        print("PULLBACK CSV schema updated:", len(old_fields), "->", len(fields), "columns")
+
+    except Exception as e:
+        raise RuntimeError(f"PULLBACK CSV schema migration failed: {e}")
+
 
 def append_log(path, fields, row):
     exists = os.path.exists(path)
@@ -44,6 +108,7 @@ def append_log(path, fields, row):
         if not exists:
             w.writeheader()
         w.writerow({k: row.get(k, "") for k in fields})
+
 
 def make_plan(r, direction):
     price = num(r.get("price"))
@@ -58,6 +123,7 @@ def make_plan(r, direction):
         tp = price * (1 - stop_pct * RR)
 
     return price, sl, tp
+
 
 def update_positions(state, rows, log_file, fields):
     rows_by_symbol = {r["symbol"]: r for r in rows}
@@ -118,64 +184,103 @@ def update_positions(state, rows, log_file, fields):
             append_log(log_file, fields, base)
             del state["positions"][symbol]
 
-STATE_FILE = "strategy_oi_funding_state.json"
-LOG_FILE = "strategy_oi_funding.csv"
-
-FIELDS = [
-    "time","symbol","event","direction","entry","sl","tp","exit","result_r",
-    "oi_change_pct","funding_rate","edge","volume_ratio5","rsi5",
-    "spread_pct","amount24","note"
-]
-
-MIN_OI_CHANGE_PCT = 0.30
-MAX_CROWDED_FUNDING = 0.00030
 
 def qualifies(r):
-    oi_change = num(r.get("oi_change_pct"), -999)
-    funding = num(r.get("funding_rate"))
     price = num(r.get("price"))
+    e9_1 = num(r.get("ema9_1"))
     e9_5 = num(r.get("ema9_5"))
+    e21_5 = num(r.get("ema21_5"))
     e9_15 = num(r.get("ema9_15"))
     e21_15 = num(r.get("ema21_15"))
-    m5, ms5 = num(r.get("macd5")), num(r.get("macd_signal5"))
-    v5 = num(r.get("volume_ratio5"))
-    ls, ss = num(r.get("long_score")), num(r.get("short_score"))
-    edge = abs(ls - ss)
+    m1, ms1 = num(r.get("macd1")), num(r.get("macd_signal1"))
+    m15, ms15 = num(r.get("macd15")), num(r.get("macd_signal15"))
+    rsi1, rsi5, rsi15 = num(r.get("rsi1")), num(r.get("rsi5")), num(r.get("rsi15"))
 
-    if oi_change == -999:
-        return False, "NEUTRAL", edge
-    if oi_change < MIN_OI_CHANGE_PCT:
-        return False, "NEUTRAL", edge
     if num(r.get("spread_pct"), 999) > MAX_SPREAD_PCT:
-        return False, "NEUTRAL", edge
+        return False, "NEUTRAL", 0
     if num(r.get("amount24")) < MIN_AMOUNT24:
-        return False, "NEUTRAL", edge
-    if v5 < 1.10:
-        return False, "NEUTRAL", edge
+        return False, "NEUTRAL", 0
+    if e9_5 <= 0:
+        return False, "NEUTRAL", 0
+
+    distance = abs(price - e9_5) / e9_5 * 100
+    near_ema = distance <= MAX_EMA9_DISTANCE_PCT
 
     long_ok = (
-        price > e9_5 and
         e9_15 > e21_15 and
-        m5 > ms5 and
-        funding <= MAX_CROWDED_FUNDING and
-        edge >= 10
+        m15 > ms15 and
+        e9_5 > e21_5 and
+        near_ema and
+        38 <= rsi5 <= 58 and
+        35 <= rsi15 <= 70 and
+        price >= e9_1 and
+        m1 > ms1 and
+        rsi1 >= 45
     )
 
     short_ok = (
-        price < e9_5 and
         e9_15 < e21_15 and
-        m5 < ms5 and
-        funding >= -MAX_CROWDED_FUNDING and
-        edge >= 10
+        m15 < ms15 and
+        e9_5 < e21_5 and
+        near_ema and
+        42 <= rsi5 <= 62 and
+        30 <= rsi15 <= 65 and
+        price <= e9_1 and
+        m1 < ms1 and
+        rsi1 <= 55
     )
 
     if long_ok:
-        return True, "LONG", edge
+        return True, "LONG", distance
     if short_ok:
-        return True, "SHORT", edge
-    return False, "NEUTRAL", edge
+        return True, "SHORT", distance
+    return False, "NEUTRAL", distance
+
+
+def common_snapshot(r):
+    return {
+        "scan_time_jst": r.get("scan_time_jst", ""),
+        "ticker_time_jst": r.get("ticker_time_jst", ""),
+        "price": num(r.get("price")),
+        "bid": num(r.get("bid")),
+        "ask": num(r.get("ask")),
+        "volume24": num(r.get("volume24")),
+        "change24": num(r.get("change24")),
+        "funding_rate": num(r.get("funding_rate")),
+        "oi": num(r.get("oi")),
+        "oi_change_pct": (
+            "" if r.get("oi_change_pct") in ("", None, "None", "nan", "NaN")
+            else num(r.get("oi_change_pct"))
+        ),
+        "ema9_1": num(r.get("ema9_1")),
+        "ema21_1": num(r.get("ema21_1")),
+        "ema9_5": num(r.get("ema9_5")),
+        "ema21_5": num(r.get("ema21_5")),
+        "ema9_15": num(r.get("ema9_15")),
+        "ema21_15": num(r.get("ema21_15")),
+        "macd_hist1": num(r.get("macd_hist1")),
+        "macd5": num(r.get("macd5")),
+        "macd_signal5": num(r.get("macd_signal5")),
+        "macd_hist5": num(r.get("macd_hist5")),
+        "macd15": num(r.get("macd15")),
+        "macd_signal15": num(r.get("macd_signal15")),
+        "macd_hist15": num(r.get("macd_hist15")),
+        "volume_ratio1": num(r.get("volume_ratio1")),
+        "volume_ratio5": num(r.get("volume_ratio5")),
+        "volume_ratio15": num(r.get("volume_ratio15")),
+        "atr1_pct": num(r.get("atr1_pct")),
+        "atr5_pct": num(r.get("atr5_pct")),
+        "atr15_pct": num(r.get("atr15_pct")),
+        "long_score": num(r.get("long_score")),
+        "short_score": num(r.get("short_score")),
+        "bias": r.get("bias", ""),
+        "edge": num(r.get("edge")),
+    }
+
 
 def main():
+    ensure_csv_schema(LOG_FILE, FIELDS)
+
     scan = latest_scan()
     scan_name = os.path.basename(scan)
     state = load_state(STATE_FILE)
@@ -194,7 +299,7 @@ def main():
         if symbol in state["positions"]:
             continue
 
-        ok, direction, edge = qualifies(r)
+        ok, direction, distance = qualifies(r)
         if not ok:
             continue
 
@@ -207,7 +312,7 @@ def main():
             "opened_at": datetime.now().isoformat()
         }
 
-        append_log(LOG_FILE, FIELDS, {
+        row = {
             "time": datetime.now().isoformat(),
             "symbol": symbol,
             "event": "OPEN",
@@ -215,22 +320,28 @@ def main():
             "entry": entry,
             "sl": sl,
             "tp": tp,
-            "oi_change_pct": num(r.get("oi_change_pct")),
-            "funding_rate": num(r.get("funding_rate")),
-            "edge": edge,
-            "volume_ratio5": num(r.get("volume_ratio5")),
+            "distance_ema9_5_pct": distance,
+            "rsi1": num(r.get("rsi1")),
             "rsi5": num(r.get("rsi5")),
+            "rsi15": num(r.get("rsi15")),
+            "macd1": num(r.get("macd1")),
+            "macd_signal1": num(r.get("macd_signal1")),
             "spread_pct": num(r.get("spread_pct")),
             "amount24": num(r.get("amount24")),
-            "note": "OI_FUNDING"
-        })
+            "note": "PULLBACK",
+        }
+
+        row.update(common_snapshot(r))
+        append_log(LOG_FILE, FIELDS, row)
 
     state["last_scan"] = scan_name
     save_state(STATE_FILE, state)
 
-    print("OI_FUNDING 完了")
+    print("PULLBACK 完了")
     print("使用CSV:", scan_name)
     print("保有中:", len(state["positions"]))
+    print("CSV列数:", len(FIELDS))
+
 
 if __name__ == "__main__":
     main()
