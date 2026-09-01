@@ -48,14 +48,6 @@
       "tp": 7.113852,
       "opened_at": "2026-08-31T21:51:02.343482"
     },
-    "SILVER_USDT": {
-      "direction": "SHORT",
-      "edge": 41.0,
-      "entry": 66.52,
-      "sl": 66.75282,
-      "tp": 66.05436,
-      "opened_at": "2026-08-31T22:51:09.013280"
-    },
     "ETH_USDT": {
       "direction": "LONG",
       "edge": 35.0,
@@ -87,7 +79,23 @@
       "sl": 86.167355,
       "tp": 87.07529,
       "opened_at": "2026-09-01T09:01:25.164535"
+    },
+    "SILVER_USDT": {
+      "direction": "LONG",
+      "edge": 38.5,
+      "entry": 66.88,
+      "sl": 66.64592,
+      "tp": 67.34816,
+      "opened_at": "2026-09-01T09:11:11.592694"
+    },
+    "TAO_USDT": {
+      "direction": "LONG",
+      "edge": 38.0,
+      "entry": 231.14,
+      "sl": 230.33101,
+      "tp": 232.75797999999998,
+      "opened_at": "2026-09-01T09:11:11.592885"
     }
   },
-  "last_scan": "mexc_scan_20260901_090125.csv"
+  "last_scan": "mexc_scan_20260901_091111.csv"
 }
