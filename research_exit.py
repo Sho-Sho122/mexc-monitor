@@ -11,8 +11,9 @@ BASE_URL = "https://api.mexc.com"
 JST = timezone(timedelta(hours=9))
 
 STATE_FILE = "research_exit_state.json"
-TRADES_FILE = "research_exit_trades.csv"
-RESULTS_FILE = "research_exit_results.csv"
+
+ROTATION_ANCHOR = datetime(2026, 9, 3, 0, 0, 0, tzinfo=JST)
+ROTATION_DAYS = 14
 
 API_SLEEP = 0.12
 PROCESS_GRACE_MINUTES = 10
@@ -105,6 +106,29 @@ def save_state(state):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
     os.replace(tmp, STATE_FILE)
+
+
+def rotation_period(open_dt):
+    """Return the fixed 14-day block containing the OPEN time (JST)."""
+    open_dt = open_dt.astimezone(JST)
+    days_from_anchor = (open_dt.date() - ROTATION_ANCHOR.date()).days
+    block_index = days_from_anchor // ROTATION_DAYS
+    start_date = ROTATION_ANCHOR.date() + timedelta(
+        days=block_index * ROTATION_DAYS
+    )
+    end_date = start_date + timedelta(days=ROTATION_DAYS - 1)
+    return start_date, end_date
+
+
+def rotated_file(kind, open_dt):
+    """Build the trades/results filename from the trade's OPEN time."""
+    if kind not in {"trades", "results"}:
+        raise ValueError(f"Unsupported rotated file kind: {kind}")
+    start_date, end_date = rotation_period(open_dt)
+    return (
+        f"research_exit_{kind}_"
+        f"{start_date:%Y-%m-%d}_to_{end_date:%Y-%m-%d}.csv"
+    )
 
 
 def append_csv(path, fields, row):
@@ -322,7 +346,7 @@ def register_new_open(state, strategy, row):
         trade[field] = row.get(field, "")
     trade["snapshot_json"] = json.dumps(row, ensure_ascii=False, separators=(",", ":"))
     state["pending"][trade_id] = trade
-    append_csv(TRADES_FILE, TRADE_FIELDS, trade)
+    append_csv(rotated_file("trades", open_dt), TRADE_FIELDS, trade)
     return True
 
 
@@ -393,7 +417,11 @@ def process_matured_trades(state):
                             "max_hours": max_hours,
                             **outcome,
                         }
-                        append_csv(RESULTS_FILE, RESULT_FIELDS, row)
+                        append_csv(
+                            rotated_file("results", open_dt),
+                            RESULT_FIELDS,
+                            row,
+                        )
                         result_count += 1
 
             if result_count != 60:
