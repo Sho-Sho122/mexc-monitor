@@ -69,7 +69,26 @@ jobs:
 
           mkdir -p /tmp/mexc-research-save
 
-          for file in             strategy_high_edge_state.json             strategy_high_edge.csv             strategy_trend_volume_state.json             strategy_trend_volume.csv             strategy_pullback_state.json             strategy_pullback.csv             strategy_oi_funding_state.json             strategy_oi_funding.csv             mexc_oi_state_research.json             research_exit_state.json             research_exit_trades.csv             research_exit_results.csv
+          for file in \
+            strategy_high_edge_state.json \
+            strategy_high_edge.csv \
+            strategy_trend_volume_state.json \
+            strategy_trend_volume.csv \
+            strategy_pullback_state.json \
+            strategy_pullback.csv \
+            strategy_oi_funding_state.json \
+            strategy_oi_funding.csv \
+            mexc_oi_state_research.json \
+            research_exit_state.json \
+            research_exit_trades.csv \
+            research_exit_results.csv
+          do
+            if [ -f "$file" ]; then
+              cp "$file" "/tmp/mexc-research-save/$file"
+            fi
+          done
+
+          for file in research_exit_trades_*.csv research_exit_results_*.csv
           do
             if [ -f "$file" ]; then
               cp "$file" "/tmp/mexc-research-save/$file"
