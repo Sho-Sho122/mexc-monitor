@@ -1,215 +1,215 @@
 {
   "balance": 58.60174917623345,
   "signals": {
-    "SUI_USDT": {
-      "grade": "A",
+    "ARB_USDT": {
+      "grade": "B",
+      "direction": "SHORT",
+      "edge": 30.5,
+      "price": 0.2136,
+      "time": "2026-09-19T13:18:09.444660"
+    },
+    "SPCXSTOCK_USDT": {
+      "grade": "B+",
       "direction": "LONG",
-      "edge": 34.0,
-      "price": 0.8333,
-      "time": "2026-09-19T13:13:21.454376"
+      "edge": 28.0,
+      "price": 152.72,
+      "time": "2026-09-19T13:18:09.740054"
     },
     "XRP_USDT": {
-      "grade": "B",
+      "grade": "B+",
       "direction": "LONG",
-      "edge": 24.0,
-      "price": 1.4267,
-      "time": "2026-09-19T13:13:21.454407"
+      "edge": 25.0,
+      "price": 1.4196,
+      "time": "2026-09-19T13:18:09.936059"
     },
-    "TAO_USDT": {
+    "XAUT_USDT": {
       "grade": "B",
       "direction": "LONG",
-      "edge": 23.5,
-      "price": 257.51,
-      "time": "2026-09-19T13:13:21.582230"
+      "edge": 23.0,
+      "price": 4374.7,
+      "time": "2026-09-19T13:18:10.879509"
     },
     "AKE_USDT": {
       "grade": "B",
       "direction": "SHORT",
-      "edge": 21.5,
-      "price": 0.040661,
-      "time": "2026-09-19T13:13:21.782091"
+      "edge": 22.5,
+      "price": 0.041636,
+      "time": "2026-09-19T13:18:10.879547"
     },
-    "LINK_USDT": {
+    "SUI_USDT": {
       "grade": "B",
       "direction": "LONG",
-      "edge": 21.5,
-      "price": 12.439,
-      "time": "2026-09-19T13:13:21.782118"
-    },
-    "SOXL_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 21.5,
-      "price": 121.42,
-      "time": "2026-09-19T13:13:21.782131"
-    },
-    "SPCXSTOCK_USDT": {
-      "grade": "B",
-      "direction": "LONG",
-      "edge": 19.0,
-      "price": 152.72,
-      "time": "2026-09-19T13:13:21.941849"
+      "edge": 21.0,
+      "price": 0.8308,
+      "time": "2026-09-19T13:18:11.224785"
     },
     "SNDKSTOCK_USDT": {
       "grade": "C",
       "direction": "LONG",
-      "edge": 18.0,
-      "price": 1784.3,
-      "time": "2026-09-19T13:13:21.941877"
+      "edge": 20.0,
+      "price": 1784.42,
+      "time": "2026-09-19T13:18:11.224808"
     },
-    "XAUT_USDT": {
-      "grade": "C",
+    "DOGE_USDT": {
+      "grade": "B",
       "direction": "LONG",
-      "edge": 13.0,
-      "price": 4374.7,
-      "time": "2026-09-19T13:13:21.941889"
-    },
-    "ENA_USDT": {
-      "grade": "C",
-      "direction": "LONG",
-      "edge": 13.0,
-      "price": 0.18164,
-      "time": "2026-09-19T13:13:21.941901"
+      "edge": 20.0,
+      "price": 0.08811,
+      "time": "2026-09-19T13:18:11.760155"
     },
     "ETH_USDT": {
-      "grade": "C",
+      "grade": "B",
       "direction": "LONG",
-      "edge": 12.5,
-      "price": 2624.57,
-      "time": "2026-09-19T13:13:21.941912"
-    },
-    "WLD_USDT": {
-      "grade": "C",
-      "direction": "LONG",
-      "edge": 12.5,
-      "price": 0.4302,
-      "time": "2026-09-19T13:13:21.941923"
-    },
-    "ZEC_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 11.0,
-      "price": 1533.43,
-      "time": "2026-09-19T13:13:21.941933"
-    },
-    "ARB_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 10.5,
-      "price": 0.21438,
-      "time": "2026-09-19T13:13:21.941943"
-    },
-    "XAU_USDT": {
-      "grade": "C",
-      "direction": "LONG",
-      "edge": 9.0,
-      "price": 4383.08,
-      "time": "2026-09-19T13:13:21.941982"
-    },
-    "SILVER_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 9.0,
-      "price": 66.45,
-      "time": "2026-09-19T13:13:21.941994"
-    },
-    "UNI_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 9.0,
-      "price": 8.893,
-      "time": "2026-09-19T13:13:21.942004"
-    },
-    "SPY_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 8.5,
-      "price": 763.51,
-      "time": "2026-09-19T13:13:21.942014"
-    },
-    "ONE_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 7.5,
-      "price": 0.0023049,
-      "time": "2026-09-19T13:13:21.942024"
-    },
-    "HYPE_USDT": {
-      "grade": "C",
-      "direction": "SHORT",
-      "edge": 6.5,
-      "price": 93.612,
-      "time": "2026-09-19T13:13:21.942033"
-    },
-    "ADA_USDT": {
-      "grade": "C",
-      "direction": "LONG",
-      "edge": 6.5,
-      "price": 0.2312,
-      "time": "2026-09-19T13:13:21.942042"
+      "edge": 19.5,
+      "price": 2623.53,
+      "time": "2026-09-19T13:18:11.954177"
     },
     "PEPE_USDT": {
       "grade": "C",
       "direction": "LONG",
-      "edge": 6.0,
-      "price": 3.8153e-06,
-      "time": "2026-09-19T13:13:21.942052"
+      "edge": 17.0,
+      "price": 3.8028e-06,
+      "time": "2026-09-19T13:18:11.954198"
     },
-    "DOGE_USDT": {
+    "XAU_USDT": {
       "grade": "C",
       "direction": "LONG",
-      "edge": 6.0,
-      "price": 0.08837,
-      "time": "2026-09-19T13:13:21.942062"
+      "edge": 15.0,
+      "price": 4382.98,
+      "time": "2026-09-19T13:18:11.954210"
     },
-    "USOIL_USDT": {
+    "HYPE_USDT": {
       "grade": "C",
-      "direction": "SHORT",
-      "edge": 6.0,
-      "price": 95.99,
-      "time": "2026-09-19T13:13:21.942072"
+      "direction": "LONG",
+      "edge": 14.5,
+      "price": 93.654,
+      "time": "2026-09-19T13:18:11.954220"
     },
     "SKHYNIXSTOCK_USDT": {
       "grade": "C",
       "direction": "SHORT",
-      "edge": 4.5,
-      "price": 1340.08,
-      "time": "2026-09-19T13:13:21.942082"
+      "edge": 13.5,
+      "price": 1339.75,
+      "time": "2026-09-19T13:18:11.954231"
     },
-    "MUSTOCK_USDT": {
+    "ADA_USDT": {
       "grade": "C",
       "direction": "SHORT",
-      "edge": 3.5,
-      "price": 1009.43,
-      "time": "2026-09-19T13:13:21.942091"
+      "edge": 13.5,
+      "price": 0.2304,
+      "time": "2026-09-19T13:18:11.954240"
     },
-    "BTC_USDT": {
+    "SOXL_USDT": {
       "grade": "C",
       "direction": "SHORT",
-      "edge": 2.0,
-      "price": 81180.0,
-      "time": "2026-09-19T13:13:21.942100"
+      "edge": 13.5,
+      "price": 121.4,
+      "time": "2026-09-19T13:18:11.954249"
+    },
+    "LINK_USDT": {
+      "grade": "C",
+      "direction": "LONG",
+      "edge": 12.5,
+      "price": 12.397,
+      "time": "2026-09-19T13:18:11.954258"
+    },
+    "ONE_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 10.5,
+      "price": 0.0023216,
+      "time": "2026-09-19T13:18:11.954293"
+    },
+    "TAO_USDT": {
+      "grade": "C",
+      "direction": "LONG",
+      "edge": 8.5,
+      "price": 256.45,
+      "time": "2026-09-19T13:18:11.954304"
     },
     "NEAR_USDT": {
       "grade": "C",
       "direction": "SHORT",
-      "edge": 2.0,
-      "price": 3.765,
-      "time": "2026-09-19T13:13:21.942110"
+      "edge": 8.0,
+      "price": 3.767,
+      "time": "2026-09-19T13:18:11.954313"
     },
-    "SPX500_USDT": {
+    "ENA_USDT": {
       "grade": "C",
-      "direction": "SHORT",
-      "edge": 0.5,
-      "price": 7656.9,
-      "time": "2026-09-19T13:13:21.942119"
+      "direction": "LONG",
+      "edge": 8.0,
+      "price": 0.18201,
+      "time": "2026-09-19T13:18:11.954321"
     },
     "SOL_USDT": {
       "grade": "C",
       "direction": "SHORT",
-      "edge": 0.0,
-      "price": 113.43,
-      "time": "2026-09-19T13:13:21.942129"
+      "edge": 7.5,
+      "price": 113.3,
+      "time": "2026-09-19T13:18:11.954329"
+    },
+    "SPX500_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 7.5,
+      "price": 7656.7,
+      "time": "2026-09-19T13:18:11.954337"
+    },
+    "WLD_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 7.5,
+      "price": 0.4293,
+      "time": "2026-09-19T13:18:11.954344"
+    },
+    "UNI_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 4.0,
+      "price": 8.88,
+      "time": "2026-09-19T13:18:11.954352"
+    },
+    "USOIL_USDT": {
+      "grade": "C",
+      "direction": "LONG",
+      "edge": 4.0,
+      "price": 95.94,
+      "time": "2026-09-19T13:18:11.954360"
+    },
+    "BTC_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 3.0,
+      "price": 81152.5,
+      "time": "2026-09-19T13:18:11.954368"
+    },
+    "ZEC_USDT": {
+      "grade": "C",
+      "direction": "LONG",
+      "edge": 3.0,
+      "price": 1535.77,
+      "time": "2026-09-19T13:18:11.954376"
+    },
+    "SILVER_USDT": {
+      "grade": "C",
+      "direction": "LONG",
+      "edge": 2.5,
+      "price": 66.44,
+      "time": "2026-09-19T13:18:11.954385"
+    },
+    "SPY_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 1.5,
+      "price": 763.48,
+      "time": "2026-09-19T13:18:11.954393"
+    },
+    "MUSTOCK_USDT": {
+      "grade": "C",
+      "direction": "SHORT",
+      "edge": 0.5,
+      "price": 1009.61,
+      "time": "2026-09-19T13:18:11.954401"
     }
   },
   "orders": {
@@ -367,60 +367,82 @@
       "planned_loss": 0.8856906079165271,
       "updated_at": "2026-09-18T18:58:06.410783"
     },
-    "XRP_USDT": {
+    "ARB_USDT": {
       "grade": "B",
-      "direction": "LONG",
-      "entry": 1.4180183998677545,
-      "sl": 1.4060822,
-      "tp": 1.4418907996032635,
-      "qty": 70.52094670233198,
-      "notional": 100.0,
-      "planned_loss": 0.8417521147022983,
-      "updated_at": "2026-09-19T13:13:21.454403"
+      "direction": "SHORT",
+      "entry": 0.21410196271962786,
+      "sl": 0.21887688,
+      "tp": 0.2045521281588836,
+      "qty": 184.0924535503147,
+      "notional": 39.4145556269943,
+      "planned_loss": 0.8790262376435015,
+      "updated_at": "2026-09-19T13:18:09.444642"
     },
-    "TAO_USDT": {
-      "grade": "B",
+    "SPCXSTOCK_USDT": {
+      "grade": "B+",
       "direction": "LONG",
-      "entry": 257.5525244945658,
-      "sl": 252.73352,
-      "tp": 267.1905334836973,
-      "qty": 0.18240826266809862,
-      "notional": 46.979708538836654,
-      "planned_loss": 0.8790262376435016,
-      "updated_at": "2026-09-19T13:13:21.582210"
+      "entry": 152.6587535476028,
+      "sl": 152.1244479101862,
+      "tp": 153.72736482243602,
+      "qty": 0.6550557873434851,
+      "notional": 100.0,
+      "planned_loss": 0.34999999999998965,
+      "updated_at": "2026-09-19T13:18:09.740035"
+    },
+    "XRP_USDT": {
+      "grade": "B+",
+      "direction": "LONG",
+      "entry": 1.4192947198941923,
+      "sl": 1.4060822,
+      "tp": 1.4457197596825773,
+      "qty": 66.52979482209766,
+      "notional": 94.42538650664719,
+      "planned_loss": 0.8790262376435015,
+      "updated_at": "2026-09-19T13:18:09.936041"
     },
     "AKE_USDT": {
       "grade": "B",
       "direction": "SHORT",
-      "entry": 0.04230032853150498,
-      "sl": 0.044671164,
-      "tp": 0.03755865759451493,
-      "qty": 370.7664447088338,
-      "notional": 15.683542419641743,
+      "entry": 0.04205646282520422,
+      "sl": 0.044049924000000004,
+      "tp": 0.03806954047561265,
+      "qty": 440.9547819427944,
+      "notional": 18.544998394373167,
       "planned_loss": 0.8790262376435016,
-      "updated_at": "2026-09-19T13:13:21.782073"
+      "updated_at": "2026-09-19T13:18:10.879543"
     },
-    "LINK_USDT": {
+    "SUI_USDT": {
       "grade": "B",
       "direction": "LONG",
-      "entry": 12.403020334824154,
-      "sl": 12.332286,
-      "tp": 12.544489004472462,
-      "qty": 8.062552289721596,
-      "notional": 100.0,
-      "planned_loss": 0.5702992731984171,
-      "updated_at": "2026-09-19T13:13:21.782114"
+      "entry": 0.8294434387379734,
+      "sl": 0.8195576,
+      "tp": 0.8492151162139203,
+      "qty": 88.91771967379864,
+      "notional": 73.7522191709747,
+      "planned_loss": 0.8790262376435017,
+      "updated_at": "2026-09-19T13:18:11.224767"
     },
-    "SPCXSTOCK_USDT": {
+    "DOGE_USDT": {
       "grade": "B",
       "direction": "LONG",
-      "entry": 152.64344193450475,
-      "sl": 152.109189887734,
-      "tp": 153.71194602804624,
-      "qty": 0.6551214957725294,
+      "entry": 0.08812380847507505,
+      "sl": 0.08761442000000001,
+      "tp": 0.08914258542522512,
+      "qty": 1134.7671160658474,
       "notional": 100.0,
-      "planned_loss": 0.34999999999998643,
-      "updated_at": "2026-09-19T13:13:21.941831"
+      "planned_loss": 0.5780372908180765,
+      "updated_at": "2026-09-19T13:18:11.760139"
+    },
+    "ETH_USDT": {
+      "grade": "B",
+      "direction": "LONG",
+      "entry": 2621.9531494843995,
+      "sl": 2612.23506,
+      "tp": 2641.3893284531987,
+      "qty": 0.03813950680990038,
+      "notional": 100.0,
+      "planned_loss": 0.3706431400694786,
+      "updated_at": "2026-09-19T13:18:11.954163"
     }
   },
   "positions": {
@@ -454,5 +476,5 @@
     "total_pnl": 20.601749176233458
   },
   "last_heartbeat": "2026-09-19 13:03:06.087185",
-  "last_processed_scan": "mexc_scan_20260919_131321.csv"
+  "last_processed_scan": "mexc_scan_20260919_131808.csv"
 }
