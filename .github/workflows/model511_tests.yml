@@ -1,0 +1,21 @@
+name: 511 beta1 tests
+on:
+  pull_request:
+  push:
+    paths:
+      - 'model511/**'
+      - 'tests/model511/**'
+      - '.github/workflows/research.yml'
+      - '.github/workflows/model511_tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python -B -m unittest discover -s tests/model511 -v

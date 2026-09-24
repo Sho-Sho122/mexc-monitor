@@ -28,6 +28,11 @@ jobs:
       - name: Install packages
         run: pip install -r requirements.txt
 
+      - name: Record research run start
+        id: research_start
+        shell: bash
+        run: echo "time=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
+
       - name: Run research scanner
         env:
           TZ: Asia/Tokyo
@@ -49,16 +54,48 @@ jobs:
         run: python strategy_pullback.py
 
       - name: Run OI FUNDING strategy
+        id: oi_strategy
         env:
           TZ: Asia/Tokyo
         run: python strategy_oi_funding.py
+
+      - name: Run 511 beta1 shadow
+        id: model511
+        continue-on-error: true
+        env:
+          TZ: Asia/Tokyo
+        run: >-
+          python -m model511 --mode FORWARD
+          --verify-strategy-states
+          --run-start "${{ steps.research_start.outputs.time }}"
+          --fetch-market
 
       - name: Run EXIT Research
         env:
           TZ: Asia/Tokyo
         run: python research_exit.py
 
+      - name: Archive 511 independently
+        id: archive511
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
+        continue-on-error: true
+        run: python -m model511.workflow_save archive --backup /tmp/model511-recovery
+
+      - name: Preserve 511 recovery evidence before research save
+        id: recovery511
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: model511-recovery-${{ github.run_id }}
+          path: |
+            511_data
+            /tmp/model511-recovery
+          if-no-files-found: warn
+
       - name: Save research state robustly
+        id: research_save
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
         shell: bash
         run: |
 
@@ -127,3 +164,21 @@ jobs:
 
           echo "Could not save research state after 5 attempts"
           exit 1
+
+      - name: Save 511 independently
+        id: save511
+        if: ${{ always() && steps.research_save.outcome == 'success' && steps.archive511.outcome == 'success' }}
+        continue-on-error: true
+        run: python -m model511.workflow_save save --backup /tmp/model511-recovery
+
+      - name: Preserve 511 save audit
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: model511-save-audit-${{ github.run_id }}
+          path: /tmp/model511-recovery
+          if-no-files-found: warn
+
+      - name: Report 511 failure
+        if: ${{ always() && (steps.model511.outcome == 'failure' || steps.archive511.outcome == 'failure' || steps.recovery511.outcome == 'failure' || steps.save511.outcome == 'failure') }}
+        run: exit 1
