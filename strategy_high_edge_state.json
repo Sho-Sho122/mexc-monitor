@@ -64,14 +64,6 @@
       "tp": 160.23384,
       "opened_at": "2026-10-03T19:13:58.477599"
     },
-    "SILVER_USDT": {
-      "direction": "LONG",
-      "edge": 35.0,
-      "entry": 61.73,
-      "sl": 61.513945,
-      "tp": 62.16210999999999,
-      "opened_at": "2026-10-05T16:56:33.724256"
-    },
     "XAU_USDT": {
       "direction": "LONG",
       "edge": 37.0,
@@ -103,7 +95,31 @@
       "sl": 0.5025528,
       "tp": 0.4972944,
       "opened_at": "2026-10-05T21:46:34.080573"
+    },
+    "SOL_USDT": {
+      "direction": "SHORT",
+      "edge": 36.0,
+      "entry": 120.31,
+      "sl": 120.73108500000001,
+      "tp": 119.46783,
+      "opened_at": "2026-10-05T21:56:38.995661"
+    },
+    "AVAX_USDT": {
+      "direction": "SHORT",
+      "edge": 37.0,
+      "entry": 10.914,
+      "sl": 10.952199,
+      "tp": 10.837602,
+      "opened_at": "2026-10-05T21:56:38.995873"
+    },
+    "USOIL_USDT": {
+      "direction": "SHORT",
+      "edge": 39.0,
+      "entry": 90.1,
+      "sl": 90.41535,
+      "tp": 89.46929999999999,
+      "opened_at": "2026-10-05T21:56:38.996039"
     }
   },
-  "last_scan": "mexc_scan_20261005_214634.csv"
+  "last_scan": "mexc_scan_20261005_215638.csv"
 }
