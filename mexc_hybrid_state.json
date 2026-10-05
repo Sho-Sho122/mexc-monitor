@@ -1,5 +1,5 @@
 {
-  "balance": 9.483508440643186,
+  "balance": 9.216237551645468,
   "positions": {
     "PROM_USDT": {
       "symbol": "PROM_USDT",
@@ -81,39 +81,73 @@
         "minus_0_75r": null,
         "minus_1r": null
       }
+    },
+    "SOL_USDT": {
+      "symbol": "SOL_USDT",
+      "direction": "NEUTRAL",
+      "rank": "C",
+      "entry_type": "LIMIT",
+      "entry": 121.09136500000001,
+      "sl": 121.51518477750001,
+      "tp": 120.24372544500001,
+      "risk_usdt": 0.1336354444988593,
+      "risk_price": 0.4238197775000003,
+      "opened_at": "2026-10-05T09:46:28.438298+09:00",
+      "score_long": 0,
+      "score_short": 0,
+      "reason": "条件不足または矛盾",
+      "mfe_r": 1.9380053588934125,
+      "mae_r": 0.8461969427559152,
+      "levels": {
+        "plus_0_5r": "2026-10-05T12:38:06.777079+09:00",
+        "plus_1r": "2026-10-05T12:56:42.112146+09:00",
+        "plus_1_5r": "2026-10-05T13:09:26.068266+09:00",
+        "plus_2r": null,
+        "plus_3r": null,
+        "minus_0_5r": "2026-10-05T09:58:58.200865+09:00",
+        "minus_0_75r": "2026-10-05T11:21:23.459963+09:00",
+        "minus_1r": null
+      }
     }
   },
-  "limit_orders": {},
+  "limit_orders": {
+    "XAUT_USDT": {
+      "direction": "SHORT",
+      "rank": "B+",
+      "limit_price": 4135.6942500000005,
+      "created_at": "2026-10-05T13:30:51.999783+09:00"
+    }
+  },
   "last_signal": {
     "XAU_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596224+09:00"
+      "time": "2026-10-05T13:50:14.729651+09:00"
     },
     "XAUT_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596234+09:00"
+      "time": "2026-10-05T13:50:14.729659+09:00"
     },
     "HYPE_USDT": {
       "rank": "C",
-      "direction": "LONG",
-      "time": "2026-10-05T13:46:14.596204+09:00"
+      "direction": "NEUTRAL",
+      "time": "2026-10-05T13:50:14.729670+09:00"
     },
     "BTC_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596209+09:00"
+      "time": "2026-10-05T13:50:14.729635+09:00"
     },
     "ETH_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596211+09:00"
+      "time": "2026-10-05T13:50:14.729636+09:00"
     },
     "SOL_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596215+09:00"
+      "time": "2026-10-05T13:50:14.729641+09:00"
     },
     "SOXL_USDT": {
       "rank": "C",
@@ -123,12 +157,12 @@
     "XRP_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596216+09:00"
+      "time": "2026-10-05T13:50:14.729642+09:00"
     },
     "MUSTOCK_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596236+09:00"
+      "time": "2026-10-05T13:50:14.729662+09:00"
     },
     "SNDKSTOCK_USDT": {
       "rank": "C",
@@ -138,12 +172,12 @@
     "SILVER_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596227+09:00"
+      "time": "2026-10-05T13:50:14.729654+09:00"
     },
     "ZEC_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596213+09:00"
+      "time": "2026-10-05T13:50:14.729638+09:00"
     },
     "SAMSUNGSTOCK_USDT": {
       "rank": "C",
@@ -153,27 +187,27 @@
     "SKHYNIXSTOCK_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596230+09:00"
+      "time": "2026-10-05T13:50:14.729656+09:00"
     },
     "DOGE_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596221+09:00"
+      "time": "2026-10-05T13:50:14.729647+09:00"
     },
     "PEPE_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596228+09:00"
+      "time": "2026-10-05T13:50:14.729655+09:00"
     },
     "SUI_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596223+09:00"
+      "time": "2026-10-05T13:50:14.729649+09:00"
     },
     "LINK_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596240+09:00"
+      "time": "2026-10-05T13:50:14.729666+09:00"
     },
     "USOIL_USDT": {
       "rank": "C",
@@ -188,12 +222,12 @@
     "TAO_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596235+09:00"
+      "time": "2026-10-05T13:50:14.729660+09:00"
     },
     "ENA_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596244+09:00"
+      "time": "2026-10-05T13:50:14.729672+09:00"
     },
     "SKHYSTOCK_USDT": {
       "rank": "C",
@@ -213,22 +247,22 @@
     "AAVE_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T12:50:16.509272+09:00"
+      "time": "2026-10-05T13:09:26.068416+09:00"
     },
     "ADA_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596239+09:00"
+      "time": "2026-10-05T13:50:14.729665+09:00"
     },
     "WLD_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596231+09:00"
+      "time": "2026-10-05T13:50:14.729658+09:00"
     },
     "PUMPFUN_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596241+09:00"
+      "time": "2026-10-05T13:50:14.729667+09:00"
     },
     "NAS100_USDT": {
       "rank": "C",
@@ -308,7 +342,7 @@
     "ONDO_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596246+09:00"
+      "time": "2026-10-05T13:50:14.729675+09:00"
     },
     "BEAT_USDT": {
       "rank": "C",
@@ -333,7 +367,7 @@
     "SPY_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596250+09:00"
+      "time": "2026-10-05T13:50:14.729679+09:00"
     },
     "NIL_USDT": {
       "rank": "C",
@@ -368,7 +402,7 @@
     "AVAX_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596243+09:00"
+      "time": "2026-10-05T13:50:14.729669+09:00"
     },
     "UKOIL_USDT": {
       "rank": "C",
@@ -388,7 +422,7 @@
     "ARB_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596249+09:00"
+      "time": "2026-10-05T13:50:14.729677+09:00"
     },
     "0G_USDT": {
       "rank": "C",
@@ -418,7 +452,7 @@
     "NEAR_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596226+09:00"
+      "time": "2026-10-05T13:50:14.729652+09:00"
     },
     "DASH_USDT": {
       "rank": "C",
@@ -443,7 +477,7 @@
     "LTC_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596248+09:00"
+      "time": "2026-10-05T13:50:14.729676+09:00"
     },
     "ATOM_USDT": {
       "rank": "C",
@@ -527,8 +561,8 @@
     },
     "BTW_USDT": {
       "rank": "C",
-      "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596252+09:00"
+      "direction": "SHORT",
+      "time": "2026-10-05T13:50:14.729632+09:00"
     },
     "BR_USDT": {
       "rank": "C",
@@ -618,12 +652,12 @@
     "QNT_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596218+09:00"
+      "time": "2026-10-05T13:50:14.729644+09:00"
     },
     "SAND_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596238+09:00"
+      "time": "2026-10-05T13:50:14.729663+09:00"
     },
     "STRK_USDT": {
       "rank": "C",
@@ -633,14 +667,14 @@
     "FET_USDT": {
       "rank": "C",
       "direction": "NEUTRAL",
-      "time": "2026-10-05T13:46:14.596245+09:00"
+      "time": "2026-10-05T13:50:14.729673+09:00"
     }
   },
-  "wins": 89,
+  "wins": 88,
   "losses": 268,
   "unknown": 0,
-  "closed_trades": 357,
-  "total_pnl": -28.516491559356826,
-  "last_scan": "mexc_scan_20261005_134614.csv",
+  "closed_trades": 356,
+  "total_pnl": -28.783762448354544,
+  "last_scan": "mexc_scan_20261005_135014.csv",
   "last_summary_at": "2026-10-05T11:10:45.821509+09:00"
 }
