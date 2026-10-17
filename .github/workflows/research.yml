@@ -13,6 +13,8 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    env:
+      PERSISTENCE_BACKUP: /tmp/research-persistence-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Checkout repository
@@ -27,6 +29,10 @@ jobs:
 
       - name: Install packages
         run: pip install -r requirements.txt
+
+      - name: Refresh formal state before computation
+        id: prepare_state
+        run: python research_persistence.py prepare --backup "$PERSISTENCE_BACKUP"
 
       - name: Record research run start
         id: research_start
@@ -75,11 +81,17 @@ jobs:
           TZ: Asia/Tokyo
         run: python research_exit.py
 
+      - name: Archive research independently
+        id: archive_research
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
+        continue-on-error: true
+        run: python research_persistence.py archive --group research --backup "$PERSISTENCE_BACKUP"
+
       - name: Archive 511 independently
         id: archive511
         if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
         continue-on-error: true
-        run: python -m model511.workflow_save archive --backup /tmp/model511-recovery
+        run: python research_persistence.py archive --group 511 --backup "$PERSISTENCE_BACKUP"
 
       - name: Preserve 511 recovery evidence before research save
         id: recovery511
@@ -87,98 +99,94 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: model511-recovery-${{ github.run_id }}
+          name: model511-recovery-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             511_data
-            /tmp/model511-recovery
-          if-no-files-found: warn
+            ${{ env.PERSISTENCE_BACKUP }}/511
+            ${{ env.PERSISTENCE_BACKUP }}/baseline.json
+          if-no-files-found: error
+
+      - name: Preserve research recovery evidence before save
+        id: recovery_research
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.PERSISTENCE_BACKUP }}/research
+            ${{ env.PERSISTENCE_BACKUP }}/baseline.json
+            strategy_high_edge.csv
+            strategy_high_edge_state.json
+            strategy_trend_volume.csv
+            strategy_trend_volume_state.json
+            strategy_pullback.csv
+            strategy_pullback_state.json
+            strategy_oi_funding.csv
+            strategy_oi_funding_state.json
+            mexc_oi_state_research.json
+            research_exit_state.json
+            research_exit_trades*.csv
+            research_exit_results*.csv
+          if-no-files-found: error
 
       - name: Save research state robustly
         id: research_save
-        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
-        shell: bash
-        run: |
-
-          set -e
-
-          git config user.name "mexc-research-bot"
-          git config user.email "mexc-research-bot@users.noreply.github.com"
-
-          mkdir -p /tmp/mexc-research-save
-
-          for file in \
-            strategy_high_edge_state.json \
-            strategy_high_edge.csv \
-            strategy_trend_volume_state.json \
-            strategy_trend_volume.csv \
-            strategy_pullback_state.json \
-            strategy_pullback.csv \
-            strategy_oi_funding_state.json \
-            strategy_oi_funding.csv \
-            mexc_oi_state_research.json \
-            research_exit_state.json \
-            research_exit_trades.csv \
-            research_exit_results.csv
-          do
-            if [ -f "$file" ]; then
-              cp "$file" "/tmp/mexc-research-save/$file"
-            fi
-          done
-
-          for file in research_exit_trades_*.csv research_exit_results_*.csv
-          do
-            if [ -f "$file" ]; then
-              cp "$file" "/tmp/mexc-research-save/$file"
-            fi
-          done
-
-          for attempt in 1 2 3 4 5
-          do
-            echo "Save attempt $attempt"
-
-            git fetch origin main
-            git reset --hard origin/main
-
-            for file in /tmp/mexc-research-save/*
-            do
-              [ -e "$file" ] || continue
-              cp "$file" .
-              git add "$(basename "$file")"
-            done
-
-            if git diff --cached --quiet; then
-              echo "No research state changes"
-              exit 0
-            fi
-
-            git commit -m "Update MEXC research state"
-
-            if git push origin HEAD:main; then
-              echo "Research state saved"
-              exit 0
-            fi
-
-            echo "Push raced with another workflow. Retrying..."
-            sleep 3
-          done
-
-          echo "Could not save research state after 5 attempts"
-          exit 1
+        if: ${{ always() && steps.oi_strategy.outcome == 'success' && steps.archive_research.outcome == 'success' }}
+        continue-on-error: true
+        run: python research_persistence.py save --group research --backup "$PERSISTENCE_BACKUP"
 
       - name: Save 511 independently
         id: save511
-        if: ${{ always() && steps.research_save.outcome == 'success' && steps.archive511.outcome == 'success' }}
+        if: ${{ always() && steps.model511.outcome == 'success' && steps.research_save.outcome == 'success' && steps.archive511.outcome == 'success' }}
         continue-on-error: true
-        run: python -m model511.workflow_save save --backup /tmp/model511-recovery
+        run: python research_persistence.py save --group 511 --backup "$PERSISTENCE_BACKUP"
 
       - name: Preserve 511 save audit
-        if: ${{ always() && steps.oi_strategy.outcome == 'success' }}
+        id: audit511
+        if: ${{ always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: model511-save-audit-${{ github.run_id }}
-          path: /tmp/model511-recovery
+          name: model511-save-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            511_data
+            ${{ env.PERSISTENCE_BACKUP }}/511
+            ${{ env.PERSISTENCE_BACKUP }}/baseline.json
+            ${{ env.PERSISTENCE_BACKUP }}/save_audit.jsonl
           if-no-files-found: warn
 
-      - name: Report 511 failure
-        if: ${{ always() && (steps.model511.outcome == 'failure' || steps.archive511.outcome == 'failure' || steps.recovery511.outcome == 'failure' || steps.save511.outcome == 'failure') }}
+      - name: Preserve research save audit
+        id: audit_research
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-save-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.PERSISTENCE_BACKUP }}/research
+            ${{ env.PERSISTENCE_BACKUP }}/baseline.json
+            ${{ env.PERSISTENCE_BACKUP }}/save_audit.jsonl
+            strategy_high_edge.csv
+            strategy_high_edge_state.json
+            strategy_trend_volume.csv
+            strategy_trend_volume_state.json
+            strategy_pullback.csv
+            strategy_pullback_state.json
+            strategy_oi_funding.csv
+            strategy_oi_funding_state.json
+            mexc_oi_state_research.json
+            research_exit_state.json
+            research_exit_trades*.csv
+            research_exit_results*.csv
+          if-no-files-found: warn
+
+      - name: Report persistence or 511 failure
+        if: >-
+          ${{ always() && (steps.prepare_state.outcome == 'failure' ||
+          steps.model511.outcome == 'failure' || steps.archive511.outcome == 'failure' ||
+          steps.recovery511.outcome == 'failure' || steps.save511.outcome == 'failure' ||
+          steps.archive_research.outcome == 'failure' || steps.research_save.outcome == 'failure' ||
+          steps.recovery_research.outcome == 'failure' || steps.audit511.outcome == 'failure' ||
+          steps.audit_research.outcome == 'failure') }}
         run: exit 1

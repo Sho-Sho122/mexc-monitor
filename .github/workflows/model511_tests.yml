@@ -5,6 +5,9 @@ on:
     paths:
       - 'model511/**'
       - 'tests/model511/**'
+      - 'tests/persistence/**'
+      - 'research_persistence.py'
+      - 'requirements*.txt'
       - '.github/workflows/research.yml'
       - '.github/workflows/model511_tests.yml'
 permissions:
@@ -17,5 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - run: python -B -m unittest discover -s tests/model511 -v
+      - run: pip install -r requirements.txt -r requirements-persistence-tests.txt
+      - run: python -B -W error -m unittest discover -s tests/model511 -v
+      - run: python -B -W error -m unittest discover -s tests/persistence -v
+        env:
+          PYTHONPATH: .
