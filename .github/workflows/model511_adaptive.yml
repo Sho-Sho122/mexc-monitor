@@ -1,0 +1,81 @@
+name: 511 Adaptive Research
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [MEXC Research]
+    types: [completed]
+  schedule:
+    - cron: '*/5 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model511-adaptive-state
+  cancel-in-progress: false
+
+jobs:
+  adaptive:
+    if: ${{ vars.ADAPTIVE_511_ENABLED == 'true' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - name: Refresh formal inputs and Adaptive state before computation
+        id: prepare
+        env:
+          RECOVERY: ${{ runner.temp }}/adaptive-recovery
+        run: python -B -m model511_adaptive.persistence prepare --backup "$RECOVERY"
+      - name: Initialize fixed anchor once
+        id: initialize
+        env:
+          RECOVERY: ${{ runner.temp }}/adaptive-recovery
+        run: |
+          SOURCE_COMMIT=$(python -c 'import json,os; print(json.load(open(os.environ["RECOVERY"]+"/baseline.json"))["base"])')
+          if [ ! -f 511_adaptive/forward/adaptive_state.json ]; then
+            python -B -m model511_adaptive init --commit "$SOURCE_COMMIT"
+          fi
+      - name: Update shadow and due research clocks
+        id: adaptive
+        env:
+          RECOVERY: ${{ runner.temp }}/adaptive-recovery
+        run: |
+          SOURCE_COMMIT=$(python -c 'import json,os; print(json.load(open(os.environ["RECOVERY"]+"/baseline.json"))["base"])')
+          python -B -m model511_adaptive tick --fetch-market --commit "$SOURCE_COMMIT"
+      - name: Archive output before attempting publication
+        id: archive
+        if: ${{ always() && steps.prepare.outcome == 'success' }}
+        env:
+          RECOVERY: ${{ runner.temp }}/adaptive-recovery
+        run: python -B -m model511_adaptive.persistence archive --backup "$RECOVERY"
+      - name: Preserve recovery before publication
+        id: recovery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model511-adaptive-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/adaptive-recovery
+            511_adaptive/forward
+          if-no-files-found: error
+          retention-days: 90
+      - name: Save Adaptive only
+        if: ${{ success() && steps.adaptive.outcome == 'success' && steps.archive.outcome == 'success' && steps.recovery.outcome == 'success' }}
+        env:
+          RECOVERY: ${{ runner.temp }}/adaptive-recovery
+        run: python -B -m model511_adaptive.persistence save --backup "$RECOVERY"
+      - name: Preserve final save audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model511-adaptive-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/adaptive-recovery
+          if-no-files-found: error
+          retention-days: 90

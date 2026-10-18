@@ -1,0 +1,21 @@
+name: 511 adaptive tests
+on:
+  push:
+    paths: ['model511_adaptive/**', 'tests/model511_adaptive/**', 'tests/persistence/**', 'research_persistence.py', 'model511/**', 'requirements*.txt', 'docs/511_ADAPTIVE*', '.github/workflows/model511_adaptive*.yml']
+  pull_request:
+    paths: ['model511_adaptive/**', 'tests/model511_adaptive/**', 'tests/persistence/**', 'research_persistence.py', 'model511/**', 'requirements*.txt', 'docs/511_ADAPTIVE*', '.github/workflows/model511_adaptive*.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt PyYAML
+      - run: python -B -W error -m unittest discover -s tests/model511 -v
+      - run: python -B -W error -m unittest discover -s tests/model511_adaptive -v
+      - run: python -B -W error -m unittest discover -s tests/persistence -v
