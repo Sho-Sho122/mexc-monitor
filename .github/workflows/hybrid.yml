@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: mexc-hybrid
@@ -13,78 +14,66 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-
+    env:
+      HYBRID_BACKUP: ${{ github.workspace }}/../hybrid-persistence-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install packages
         run: pip install -r requirements.txt
-
+      - name: Refresh and validate HYBRID inputs
+        run: python hybrid_persistence.py prepare --backup "$HYBRID_BACKUP"
       - name: Run MEXC scanner
         run: python mexc_scanner.py
-
+      - name: Checkpoint exact inputs
+        run: python hybrid_persistence.py checkpoint --backup "$HYBRID_BACKUP"
+      - name: Preserve inputs before computation
+        uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-inputs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.HYBRID_BACKUP }}/baseline.json
+            ${{ env.HYBRID_BACKUP }}/input-checkpoint.json
+          if-no-files-found: error
+          retention-days: 90
       - name: Run HYBRID system
         env:
           DISCORD_HYBRID_WEBHOOK_URL: ${{ secrets.DISCORD_HYBRID_WEBHOOK_URL }}
           TZ: Asia/Tokyo
-        run: python mexc_hybrid_system.py
-
-      - name: Save HYBRID state robustly
-        shell: bash
-        run: |
-          set -e
-
-          git config user.name "mexc-hybrid-bot"
-          git config user.email "mexc-hybrid-bot@users.noreply.github.com"
-
-          mkdir -p /tmp/mexc-hybrid-save
-
-          for file in \
-            mexc_hybrid_state.json \
+        run: python hybrid_persistence.py execute --backup "$HYBRID_BACKUP"
+      - name: Seal completed output
+        run: python hybrid_persistence.py archive --backup "$HYBRID_BACKUP"
+      - name: Preserve output before saving
+        id: recovery
+        uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.HYBRID_BACKUP }}/recovery.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Verify durable Recovery by downloading it
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RECOVERY_ID: ${{ steps.recovery.outputs.artifact-id }}
+          RECOVERY_DIGEST: ${{ steps.recovery.outputs.artifact-digest }}
+        run: python hybrid_persistence.py confirm --backup "$HYBRID_BACKUP" --artifact-id "$RECOVERY_ID" --digest "$RECOVERY_DIGEST"
+      - name: Save HYBRID with compare-and-swap
+        run: python hybrid_persistence.py save --backup "$HYBRID_BACKUP"
+      - name: Preserve audit and diagnostic files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.HYBRID_BACKUP }}
+            mexc_hybrid_state.json
             mexc_hybrid_trades.csv
-          do
-            if [ -f "$file" ]; then
-              cp "$file" "/tmp/mexc-hybrid-save/$file"
-            fi
-          done
-
-          for attempt in 1 2 3 4 5 6 7 8 9 10
-          do
-            echo "Save attempt $attempt"
-
-            git fetch origin main
-            git reset --hard origin/main
-
-            for file in /tmp/mexc-hybrid-save/*
-            do
-              [ -e "$file" ] || continue
-              cp "$file" .
-              git add "$(basename "$file")"
-            done
-
-            if git diff --cached --quiet; then
-              echo "No HYBRID state changes"
-              exit 0
-            fi
-
-            git commit -m "Update MEXC HYBRID state"
-
-            if git push origin HEAD:main; then
-              echo "HYBRID state saved"
-              exit 0
-            fi
-
-            echo "Push raced with another workflow. Retrying..."
-            sleep 3
-          done
-
-          echo "Could not save HYBRID state after 10 attempts"
-          exit 1
+            mexc_scan_*.csv
+          if-no-files-found: error
+          retention-days: 90

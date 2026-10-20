@@ -1,0 +1,52 @@
+# HYBRID保存安全性：ローカル候補
+
+この変更は保存処理だけを対象とし、fetch-depthは0のままです。HYBRID計算本体、Scanner、Monitor、Research、511 β1、Adaptive、研究条件には変更しません。
+
+## 保存契約
+
+1. 計算前に最新mainをfetchし、HYBRID state JSONとtrades CSVのGit blob・modeを基準として固定する。実行コードに更新があれば再起動を要求し、旧コードでは進めない。
+2. 最新入力の妥当性を確認してから2ファイルを更新し、最後にbaseline markerをatomic保存する。JSON不正を初期stateとみなさない。
+3. Scanner実行後、基準stateとScanner原本を入力Artifactへ保存する。入力保存失敗時は計算しない。
+4. 既存HYBRIDを一度だけ子プロセスとして実行する。開始markerで同じ計算の再実行を拒否し、終了コード0・出力検証後に完了markerを作る。Discord送信の再実行も自動では行わない。
+5. 完了出力をimmutable Recovery JSONへ格納する。Recovery単体に基準入力、Scanner checkpoint原本、計算完了markerを含め、基準ハッシュ・出力ハッシュをconfirm/save時にも照合する。証拠を含まない旧ローカル候補のRecoveryは推測補完せず拒否する。stateとCSVを独立に保存せず、1つのGit treeで反映する。既存CSV prefixの削除・書換えを拒否する。
+6. RecoveryをGitHub Artifactへアップロードし、APIから再ダウンロードする。Artifact ID、run、attempt、期限、ZIP SHA-256、格納されたRecoveryの全byteを検証する。GitHub tokenを署名付きストレージURLへ転送しない。
+7. 検証済みRecoveryだけを保存する。最新mainのHYBRID blob/modeが基準と一致する場合だけ、最新mainを親とするcommitをprivate indexで構成する。通常pushだけを使用する。
+8. 他システムの更新によるnon-fast-forwardは再取得してCASを繰り返す。HYBRIDが変化していればHYBRID_REMOTE_CONFLICTとして拒否。remoteが出力と完全一致ならALREADY_SAVEDとし重複commitを作らない。
+9. 最後にalways()で監査・診断Artifactを保存する。診断Artifact内の部分出力は正式Recoveryではない。
+
+## runner喪失と保持限界
+
+Recoveryアップロード完了後なら、runner終了やpush応答喪失後も外部Artifactから照合できる。アップロード前にrunnerが失われた場合、未送信の計算結果は回収できない。既に保存できた入力Artifactを監査に使用するが、時刻依存の再計算・部分出力からの推測復元は禁止する。GitHub全体の障害、Artifact削除、保持期限切れも保証対象外。
+
+Artifact保持要求は90日。実際のexpires_atを確認し、必要な証拠は期限前に承認済みの長期保管先へ移す必要がある。この候補に外部ストレージや定期保全の設定は含めない。永続とはrunnerから独立した保持であり、無期限保存ではない。
+
+## Recovery再開
+
+本番への再開操作は別途承認が必要。自動復旧しない。
+
+- 元runのRecovery Artifactと監査を取得し、ID・SHA-256・期限を記録する。
+- 新しい隔離checkoutとcheckout外のRecoveryディレクトリを用意する。recovery.jsonをそのまま配置する。
+- confirmで元Artifactを再検証し、saveで同じCASを再実施する。元baseline commitが浅いcheckoutに存在しなくても、Recoveryに含むコードsnapshotと基準blobで照合する。
+- remoteが同一出力なら保存済み。別HYBRID更新なら拒否し、手動で原本との重複・未反映を監査する。stateの自動merge、上書き、過去巻戻しは禁止。
+- 失敗runをActionsのRe-runで再計算して復旧する方法は採らない。
+
+## 公開手順（未実施）
+
+Researchのコード変更guardはHYBRID workflow・新Pythonの追加も検出する。Researchが現在idleであることだけでは公開の安全条件を満たさない。
+
+1. 最新mainに保存安全性候補だけを統合しCI・差分を確認する。fetch-depth変更は含めない。
+2. ユーザーへResearch外部cronの新規起動だけの一時停止を依頼し、停止時刻と停止確認を受ける。Codexは設定を変更しない。
+3. 既存Researchと待機runが保存完了するまで待つ。強制キャンセルしない。外部停止の確認が不十分なら公開しない。
+4. HYBRIDの新規起動もユーザー承認・操作で一時停止し、旧方式を使う全実行中・待機runの保存完了を必ず待つ。旧writerは新CASの保存後でも古いstateを通常pushで上書きできるため、新旧writerを重複稼働させない。停止の確認またはdrainが不確実なら公開しない。
+5. Monitorの更新が続いてもlatest mainを基準にcode-only PRを通常mergeする。force pushやstate取込みはしない。競合したら再検証する。
+6. ユーザーへ外部起動再開を依頼し、再開確認と自然runの保存結果を確認する。失敗時もスケジューラーの安全な復旧を優先する。
+
+HYBRID以外のwriterがHYBRIDの2ファイルを直接上書きする場合、本実装はそのwriter自身を制御できない。こちらのCASは古いstateからの保存を拒否するが、全writerの協調を保証するものではない。公開前にwriter一覧を再確認する。
+
+## Shakedown・ロールバック
+
+最初の自然run3件で、入力/Recovery/Auditの3Artifact、再ダウンロード検証、CAS親SHA、保存commitの2ファイル、計算結果byte一致を確認する。固定24時間でCheckout・計算・Artifact upload/download・保存・総実行時間、キャンセル率、保存率を記録する。Actions Successだけで完全性を認定しない。
+
+保存安全性が本番で確認できた後、HYBRID fetch-depthだけ0→1にする独立PRを準備する。ローカルの浅いGitテストだけで5分完了を認定しない。今回の変更はupload/download分の時間を追加する。
+
+障害時にstateを巻き戻さない。失敗runのRecoveryを保全し、必要ならユーザー承認のもとHYBRID新規起動を一時停止する。CASを外した旧保存器へ無条件に戻すことは安全なロールバックではない。保存安全性の修正か、保存をfail-closedで止める対応を選ぶ。将来のCheckout変更のロールバックは最新main上のfetch-depth 1→0だけとし、データを戻さない。
