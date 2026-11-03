@@ -1869,3 +1869,4 @@
 {"at": "2026-10-27T15:33:51.398902+09:00", "error": "Public market data request failed", "reason": "MARKET_DATA_ERROR", "symbol": "DOGE_USDT"}
 {"at": "2026-10-27T22:09:53.037714+09:00", "error": "Public market data request failed", "reason": "MARKET_DATA_ERROR", "symbol": "XAUT_USDT"}
 {"at": "2026-11-03T01:36:37.337175+09:00", "error": "HTTPSConnectionPool(host='api.mexc.com', port=443): Read timed out. (read timeout=20)", "reason": "MARKET_DATA_ERROR", "symbol": "SOL_USDT"}
+{"at": "2026-11-03T16:11:01.077911+09:00", "error": "504 Server Error: Gateway Time-out for url: https://api.mexc.com/api/v1/contract/ticker?symbol=BTC_USDT", "reason": "MARKET_DATA_ERROR", "symbol": "BTC_USDT"}
