@@ -1,0 +1,24 @@
+name: HYBRID persistence tests
+on:
+  pull_request:
+  push:
+    paths:
+      - 'hybrid_persistence.py'
+      - 'research_persistence.py'
+      - 'tests/hybrid_persistence/**'
+      - '.github/workflows/hybrid.yml'
+      - '.github/workflows/hybrid_persistence_tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt -r requirements-persistence-tests.txt
+      - run: python -B -W error -m unittest discover -s tests/hybrid_persistence -v
+      - run: python -B -W error -m unittest discover -s tests/model511 -v
+      - run: python -B -W error -m unittest discover -s tests/persistence -v
